@@ -128,3 +128,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# OS
+.DS_Store
+
+# Project Numbers
+/src/constants/projects.json
