@@ -30,7 +30,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	progressLog(
 		`Hold on, I'm ${
 			operation === "clockIn" ? "clocking in" : "clocking out"
-		} for you.`
+		} for you at ${OZO_URL} `
 	);
 
 	// Go to login page
