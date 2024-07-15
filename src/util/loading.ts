@@ -4,6 +4,6 @@ export const displayLoading = () => {
 	let x = 0;
 	return setInterval(() => {
 		process.stdout.write(`\r${P[x++]} `);
-		if (x === 10) x = 0;
+		if (x === P.length) x = 0;
 	}, 80);
 };
