@@ -6,10 +6,17 @@ import { subtract } from "./util/subtract";
 import projects from "./constants/projects.json";
 import { sleep } from "./util/sleep";
 
-const OZO_URL = process.env.OZO_URL as string;
-const USER_ID = process.env.USER_ID as string;
-const USER_PASSWORD = process.env.USER_PASSWORD as string;
+const OZO_URL = process.env.OZO_URL;
+const USER_ID = process.env.USER_ID;
+const USER_PASSWORD = process.env.USER_PASSWORD;
 const BROWSER_IS_HEADLESS = process.env.BROWSER_ID_HEADLESS === "true";
+
+// Throw an error if env variables are not set.
+const setEnvMsg = "Make sure you set it in .env file in the root directory.";
+if (OZO_URL == null) throw new Error(`OZO_URL is not set.${setEnvMsg}`);
+if (USER_ID == null) throw new Error(`USER_ID is not set.${setEnvMsg}`);
+if (USER_PASSWORD == null)
+	throw new Error(`USER_PASSWORD is not set.${setEnvMsg}`);
 
 const buttons = {
 	clockIn: "#btn03",
@@ -181,7 +188,9 @@ const main = async () => {
 
 		await setProjectCodes(page, operation);
 
-		progressLog(`Have a nice rest of the day.`);
+		progressLog(
+			`Have a nice rest of the day. See if it's properly done yourself here: ${OZO_URL}`
+		);
 	} catch (err: unknown) {
 		console.error(
 			`Bro...${emoji.get("tired_face")} %s${emoji.get("sob")}`,
