@@ -8,7 +8,7 @@ OZO の勤怠を自動化します。
 
 必須の主要プロジェクト１つに加えて、複数のサブプロジェクトが指定できます。
 
-##### /src/constants/project/json
+##### /src/constants/projects/json
 
 ```json
 [
