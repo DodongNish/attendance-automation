@@ -34,6 +34,8 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	await page.locator("#login-password").fill(USER_PASSWORD);
 	await page.locator("#login-btn").click();
 
+	// TODO: ログイン失敗時のエラー処理
+
 	// Attendance Page
 	// TODO: ここclick()にする
 	await page.locator(buttons[operation]).hover();
