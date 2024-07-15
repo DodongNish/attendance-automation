@@ -17,5 +17,6 @@
 		"dotenv": "^16.4.5",
 		"node-emoji": "^2.1.3",
 		"puppeteer": "^22.13.0"
-	}
+	},
+	"packageManager": "pnpm@9.5.0"
 }
