@@ -44,7 +44,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	// TODO: ログイン失敗時のエラー処理
 
 	// Attendance Page
-	// TODO: ここclick()にする
+	// TODO: clickにする
 	await page.locator(buttons[operation]).hover();
 
 	progressLog(
@@ -57,7 +57,10 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	if (operation === "clockIn") return;
 	const timeSpentOnMainProject = (totalWorkTime: string): string => {
 		const timesSpentOnSubProjects = projects
-			.filter((project) => project.time != null)
+			.filter(
+				(project) =>
+					project.time != null && new Date().getDay() === project.day
+			)
 			.map((project) => project.time as string);
 
 		const result = subtract(totalWorkTime, timesSpentOnSubProjects);
@@ -73,15 +76,16 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	progressLog(`Now I'm setting the project codes for you.`);
 
 	await page.locator("a#div_inputbutton").click();
+
+	// TODO: 初期表示で作業時間として00:00が表示されてしまうため、実際の作業時間が表示されるのを待つが、秒数指定ではなく、'00:00'でなくなったらを条件に処理再開したいところ。
+	await sleep(5000);
+
 	const ramainingWorkTimeBefore = await page.waitForSelector(
 		".footer-content-detail span:nth-of-type(3)"
 	);
-	let totalWorkTime = (await ramainingWorkTimeBefore?.evaluate(
-		(el) => el.textContent
+	let totalWorkTime = (await ramainingWorkTimeBefore?.evaluate((el) =>
+		el.textContent?.substring(1, el.textContent.length - 1)
 	)) as string;
-
-	// TODO: totalWorkTimeを実際の値を使うように、以下の行を削除。
-	totalWorkTime = "12:00";
 
 	for (const [index, project] of projects.entries()) {
 		if (project.day != null && new Date().getDay() !== project.day)
@@ -104,19 +108,25 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	const ramainingWorkTimeAfter = await page.waitForSelector(
 		".footer-content-detail span:nth-of-type(3)"
 	);
-	if (
-		((await ramainingWorkTimeAfter?.evaluate(
-			(el) => el.textContent
-		)) as string) !== "(00:00)"
-	) {
-		// This error means the implementation is wrong.
-		throw new Error(
-			"The time you worked on projects never matches your total worktime today... Not sure why..."
-		);
-	}
 
-	// TODO: clickに置換
-	await page.locator("#div_sub_buttons_regist").hover();
+	// 作業時間の項目がすぐには適用されないので、コメントアウト。sleep()すればよいが、00:00ではなくなったらの条件でバリデーションを行いたいところ。
+	// Blur the input to apply changes
+	// await page.locator(`#text_project_1`).click();
+
+	// await sleep(1000);
+
+	// if (
+	// 	((await ramainingWorkTimeAfter?.evaluate(
+	// 		(el) => el.textContent
+	// 	)) as string) !== "(00:00)"
+	// ) {
+	// 	// This error means the implementation is wrong.
+	// 	throw new Error(
+	// 		"The time you worked on projects never matches your total worktime today... Not sure why..."
+	// 	);
+	// }
+
+	await page.locator("#div_sub_buttons_regist").click();
 
 	progressLog(`Congrats! Project codes are set.`);
 };
@@ -189,7 +199,7 @@ const main = async () => {
 		await setProjectCodes(page, operation);
 
 		progressLog(
-			`Have a nice rest of the day. See if it's properly done yourself here: ${OZO_URL}`
+			`Have a nice rest of the day. See if it's properly done yourself here: ${OZO_URL} `
 		);
 	} catch (err: unknown) {
 		console.error(
@@ -198,7 +208,7 @@ const main = async () => {
 		);
 	} finally {
 		clearInterval(intervalId);
-		browser.close();
+		// browser.close();
 	}
 };
 
