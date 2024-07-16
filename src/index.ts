@@ -55,6 +55,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 /** Sets project codes on the 工数管理 page. */
 const setProjectCodes = async (page: Page, operation: Operation) => {
 	if (operation === "clockIn") return;
+
 	const timeSpentOnMainProject = (totalWorkTime: string): string => {
 		const timesSpentOnSubProjects = projects
 			.filter(
@@ -109,17 +110,16 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	await page.locator(".button_edit").click();
 
 	// Make sure 作業時間残 is (00:00) before applying changes
-	// TODO: コメントアウトを取る
-	// if (
-	// 	((await ramainingWorkTime?.evaluate(
-	// 		(el) => el.textContent
-	// 	)) as string) !== "(00:00)"
-	// ) {
-	// 	// This error means the implementation is wrong.
-	// 	throw new Error(
-	// 		"The time you worked on projects never matches your total worktime today... Not sure why..."
-	// 	);
-	// }
+	if (
+		((await remainingWorkTime?.evaluate(
+			(el) => el.textContent
+		)) as string) !== "(00:00)"
+	) {
+		// This error means the implementation is wrong.
+		throw new Error(
+			"The time you worked on projects never matches your total worktime today... Not sure why..."
+		);
+	}
 
 	await page.locator("#div_sub_buttons_regist").click();
 
