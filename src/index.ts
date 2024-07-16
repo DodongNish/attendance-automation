@@ -152,7 +152,7 @@ const isValidOperation = (operation: string): operation is Operation => {
 };
 
 /** Validates the projects set as constants */
-const validateProject = () => {
+const validateProjects = () => {
 	const mainProject = projects.filter((project) => project.time == null);
 	if (mainProject.length !== 1)
 		throw new Error(
@@ -182,11 +182,9 @@ const main = async () => {
 	try {
 		// daghan na mamaag jud oy
 
-		// Validate operation input
 		if (!isValidOperation(operation)) return;
 
-		// Validate the projects set as constants
-		validateProject();
+		validateProjects();
 
 		// Press down 出勤 or 退勤
 		await attend(browser, page, operation);
