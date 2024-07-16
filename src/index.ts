@@ -42,6 +42,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	await page.locator("#login-btn").click();
 
 	// TODO: ログイン失敗時のエラー処理
+	// TODO: 打刻済みの時のスキップ処理
 
 	// Attendance Page
 	await page.locator(buttons[operation]).click();
@@ -75,6 +76,8 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	progressLog(`Now I'm setting the project codes for you.`);
 
 	await page.locator("a#div_inputbutton").click();
+
+	// TODO: 既にプロ番が設定されている場合のスキップ処理
 
 	// Make sure 作業時間残 is changed from the initial value which is either '00:00' or '(00:00)'
 	await page.waitForSelector(
