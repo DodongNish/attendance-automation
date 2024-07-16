@@ -68,11 +68,11 @@ pnpm install
 ## 出勤
 
 ```bash
-npx ts-node src/index.ts clockIn
+pnpm clockIn
 ```
 
 ## 退勤 & プロ番自動入力
 
 ```bash
-npx ts-node src/index.ts clockOut
+pnpm clockOut
 ```
