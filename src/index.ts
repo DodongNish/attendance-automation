@@ -11,7 +11,7 @@ const USER_ID = process.env.USER_ID;
 const USER_PASSWORD = process.env.USER_PASSWORD;
 const BROWSER_IS_HEADLESS = process.env.BROWSER_ID_HEADLESS === "true";
 
-// Throw an error if env variables are not set.
+// Throw an error if any of the env variables are not set.
 const setEnvMsg = "Make sure you set it in .env file in the root directory.";
 if (OZO_URL == null) throw new Error(`OZO_URL is not set.${setEnvMsg}`);
 if (USER_ID == null) throw new Error(`USER_ID is not set.${setEnvMsg}`);
@@ -30,7 +30,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	progressLog(
 		`Hold on, I'm ${
 			operation === "clockIn" ? "clocking in" : "clocking out"
-		} for you at ${OZO_URL} `
+		} for you.`
 	);
 
 	// Go to login page
@@ -76,13 +76,15 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	await page.locator("a#div_inputbutton").click();
 
-	// TODO: 初期表示で作業時間として00:00が表示されてしまうため、実際の作業時間が表示されるのを待つが、秒数指定ではなく、'00:00'でなくなったらを条件に処理再開したいところ。
-	await sleep(5000);
+	// Make sure 作業時間残 is changed from the initial value which is either '00:00' or '(00:00)'
+	await page.waitForSelector(
+		'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and not(text()="00:00") and not(text()="(00:00)")]'
+	);
 
-	const ramainingWorkTimeBefore = await page.waitForSelector(
+	const remainingWorkTime = await page.waitForSelector(
 		".footer-content-detail span:nth-of-type(3)"
 	);
-	let totalWorkTime = (await ramainingWorkTimeBefore?.evaluate((el) =>
+	const totalWorkTime = (await remainingWorkTime?.evaluate((el) =>
 		el.textContent?.substring(1, el.textContent.length - 1)
 	)) as string;
 
@@ -100,22 +102,13 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 			);
 	}
 
-	// Wait for 1500ms to make sure the remaining work time is refreshed.
-	await sleep(1500);
+	// Make sure 作業時間残 displays the correct time by clicking anywhere outside the input field
+	await page.locator(".button_edit").click();
 
-	// Make sure the value of 作業時間残 is '(00:00)'
-	const ramainingWorkTimeAfter = await page.waitForSelector(
-		".footer-content-detail span:nth-of-type(3)"
-	);
-
-	// 作業時間の項目がすぐには適用されないので、コメントアウト。sleep()すればよいが、00:00ではなくなったらの条件でバリデーションを行いたいところ。
-	// Blur the input to apply changes
-	// await page.locator(`#text_project_1`).click();
-
-	// await sleep(1000);
-
+	// Make sure 作業時間残 is (00:00) before applying changes
+	// TODO: コメントアウトを取る
 	// if (
-	// 	((await ramainingWorkTimeAfter?.evaluate(
+	// 	((await ramainingWorkTime?.evaluate(
 	// 		(el) => el.textContent
 	// 	)) as string) !== "(00:00)"
 	// ) {
@@ -148,11 +141,11 @@ const createAndConfigureBrowserInstance = async () => {
 const isValidOperation = (operation: string): operation is Operation => {
 	if (operation == null) {
 		throw new Error(
-			`You forgot to specify what operation you wanna perform.\nIt's either 'clockIn' or 'clockOut'. Do you even have a brain?`
+			`You forgot to specify what operation you wanna perform.\nIt's either 'clockIn' or 'clockOut'.`
 		);
 	} else if (!(operation === "clockIn" || operation === "clockOut")) {
 		throw new Error(
-			`What the hell are you doing? '${operation}' is not a valid operation.\nHow many times do I have to tell you it should either be 'clockIn' or 'clockOut'?`
+			`What the heck are you doin? '${operation}' is not a valid operation.\nIt should either be 'clockIn' or 'clockOut'.`
 		);
 	}
 	return true;
@@ -165,6 +158,11 @@ const validateProject = () => {
 		throw new Error(
 			"There should be strictly 1 main project with no time specified."
 		);
+	if (projects.length - 1 > 5) {
+		throw new Error(
+			"You can set up to 5 sub projects. Not more than that."
+		);
+	}
 };
 
 /** Console logs the message with reversed color. */
@@ -190,17 +188,18 @@ const main = async () => {
 		// Validate the projects set as constants
 		validateProject();
 
+		// Press down 出勤 or 退勤
 		await attend(browser, page, operation);
 
 		// Wait for 80ms or display purposes
 		await sleep(80);
 
-		// TODO: 登録した値(projectCode, time)を表示する。
 		await setProjectCodes(page, operation);
 
-		progressLog(
-			`Have a nice rest of the day. See if it's properly done yourself here: ${OZO_URL} `
-		);
+		// Wait for 80ms or display purposes
+		await sleep(80);
+
+		progressLog(`See if it's properly done yourself at ${OZO_URL} `);
 	} catch (err: unknown) {
 		console.error(
 			`Bro...${emoji.get("tired_face")} %s${emoji.get("sob")}`,
