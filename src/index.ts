@@ -44,8 +44,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	// TODO: ログイン失敗時のエラー処理
 
 	// Attendance Page
-	// TODO: clickにする
-	await page.locator(buttons[operation]).hover();
+	await page.locator(buttons[operation]).click();
 
 	progressLog(
 		`${operation === "clockIn" ? "Clocking in" : "Clocking out"} is done.`
@@ -196,6 +195,7 @@ const main = async () => {
 		// Wait for 80ms or display purposes
 		await sleep(80);
 
+		// TODO: 登録した値(projectCode, time)を表示する。
 		await setProjectCodes(page, operation);
 
 		progressLog(
@@ -208,7 +208,7 @@ const main = async () => {
 		);
 	} finally {
 		clearInterval(intervalId);
-		// browser.close();
+		browser.close();
 	}
 };
 
