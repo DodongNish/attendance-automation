@@ -57,7 +57,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	}
 
 	// Click 出勤 or 退出
-	await page.locator(buttons[operation]).hover();
+	await page.locator(buttons[operation]).click();
 
 	progressLog(
 		`${operation === "clockIn" ? "Clocking in" : "Clocking out"} is done.`
