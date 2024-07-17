@@ -90,7 +90,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	await page.locator("a#div_inputbutton").click();
 
-	// TODO: 既にプロ番が設定されている場合のスキップ処理
+	// TODO: 既にプロ番が設定されている場合のスキップ処理(設定済みの状態でもう一度実行した時にタイムアウトエラーになるため。)
 
 	// Make sure 作業時間残 is changed from the initial value which is either '00:00' or '(00:00)'
 	await page.waitForSelector(
