@@ -189,7 +189,7 @@ const main = async () => {
 		await sleep(80);
 
 		progressLog(`See if it's properly done yourself at ${config.OZO_URL} `);
-	} catch (err: unknown) {
+	} catch (err) {
 		console.error(
 			`Bro...${emoji.get("tired_face")} %s${emoji.get("sob")}`,
 			(err as Error).message
