@@ -37,11 +37,27 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	await page.locator("#login-password").fill(config.USER_PASSWORD);
 	await page.locator("#login-btn").click();
 
-	// TODO: ログイン失敗時のエラー処理
-	// TODO: 打刻済みの時のスキップ処理
+	// Wait for 3 seconds to ensure navigation after clicking is complete.
+	await sleep(3000);
 
-	// Attendance Page
-	await page.locator(buttons[operation]).click();
+	// Throw an error if failed to login
+	if ((await page.$("#err-font")) != null)
+		throw new Error("Your ID or password was wrong.");
+
+	const elementHandle = await page.waitForSelector(
+		`xpath///th[text()='打刻']/following-sibling::td[${
+			operation === "clockIn" ? "2" : "3"
+		}]`
+	);
+
+	// Skip clocking in when it's already done
+	if (await elementHandle?.evaluate((el) => el.textContent !== "")) {
+		progressLog("Skipped clocking in because it was already done.");
+		return;
+	}
+
+	// Click 出勤 or 退出
+	await page.locator(buttons[operation]).hover();
 
 	progressLog(
 		`${operation === "clockIn" ? "Clocking in" : "Clocking out"} is done.`
@@ -81,10 +97,10 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and not(text()="00:00") and not(text()="(00:00)")]'
 	);
 
-	const remainingWorkTime = await page.waitForSelector(
+	const elementHandle = await page.waitForSelector(
 		".footer-content-detail span:nth-of-type(3)"
 	);
-	const totalWorkTime = (await remainingWorkTime?.evaluate((el) =>
+	const totalWorkTime = (await elementHandle?.evaluate((el) =>
 		el.textContent?.substring(1, el.textContent.length - 1)
 	)) as string;
 
