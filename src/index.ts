@@ -108,18 +108,10 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	// Make sure 作業時間残 displays the correct time by clicking anywhere outside the input field
 	await page.locator(".button_edit").click();
-
-	// Make sure 作業時間残 is (00:00) before applying changes
-	if (
-		((await remainingWorkTime?.evaluate(
-			(el) => el.textContent
-		)) as string) !== "(00:00)"
-	) {
-		// This error means the implementation is wrong.
-		throw new Error(
-			"The time you worked on projects never matches your total worktime today... Not sure why..."
-		);
-	}
+	// Make sure 作業時間残 is '(00:00)'
+	await page.waitForSelector(
+		'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and text()="(00:00)"]'
+	);
 
 	await page.locator("#div_sub_buttons_regist").click();
 
