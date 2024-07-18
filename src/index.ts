@@ -42,7 +42,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 
 	// Throw an error if failed to login
 	if ((await page.$("#err-font")) != null)
-		throw new Error("Your ID or password was wrong.");
+		throw new Error("Your ID or password is wrong.");
 
 	const elementHandle = await page
 		.locator(
