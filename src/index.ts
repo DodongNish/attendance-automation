@@ -21,8 +21,6 @@ const buttons = {
 
 type Operation = keyof typeof buttons;
 
-//TODO: waitForSelectorをlocator('').waitHandleに置き換える。
-
 /** Presses down '出勤' or '退勤' depending on the operation */
 const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	progressLog(
@@ -46,11 +44,13 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	if ((await page.$("#err-font")) != null)
 		throw new Error("Your ID or password was wrong.");
 
-	const elementHandle = await page.waitForSelector(
-		`xpath///th[text()='実績']/following-sibling::td[${
-			operation === "clockIn" ? "2" : "3"
-		}]`
-	);
+	const elementHandle = await page
+		.locator(
+			`xpath///th[text()='実績']/following-sibling::td[${
+				operation === "clockIn" ? "2" : "3"
+			}]`
+		)
+		.waitHandle();
 
 	// Skip clocking in when it's already done
 	if (await elementHandle?.evaluate((el) => el.textContent?.includes(":"))) {
@@ -97,11 +97,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		.waitHandle();
 
 	// Skip setting project codes if they are already set
-	if (
-		await handleFor1stTimeInput.evaluate((el) =>
-			el.textContent?.includes(":")
-		)
-	) {
+	if (await handleFor1stTimeInput.evaluate((el) => el.value.includes(":"))) {
 		progressLog(
 			"Skipped setting project codes because they were already set."
 		);
@@ -109,13 +105,16 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	}
 
 	// Make sure 作業時間残 is changed from the initial value which is either '00:00' or '(00:00)'
-	await page.waitForSelector(
-		'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and not(text()="00:00") and not(text()="(00:00)")]'
-	);
+	await page
+		.locator(
+			'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and not(text()="00:00") and not(text()="(00:00)")]'
+		)
+		.waitHandle();
 
-	const elementHandle = await page.waitForSelector(
-		".footer-content-detail span:nth-of-type(3)"
-	);
+	const elementHandle = await page
+		.locator(".footer-content-detail span:nth-of-type(3)")
+		.waitHandle();
+
 	const totalWorkTime = (await elementHandle?.evaluate((el) =>
 		el.textContent?.substring(1, el.textContent.length - 1)
 	)) as string;
@@ -139,11 +138,16 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	await page.locator(".button_edit").click();
 
 	// Make sure 作業時間残 is '(00:00)'
-	await page.waitForSelector(
-		'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and text()="(00:00)"]'
-	);
+	await page
+		.locator(
+			'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and text()="(00:00)"]'
+		)
+		.waitHandle();
 
 	await page.locator("#div_sub_buttons_regist").click();
+
+	// Wait for the app to run post-clicking processes before closing the browser
+	await sleep(3000);
 
 	progressLog(`Congrats! Project codes are set.`);
 };
@@ -222,9 +226,6 @@ const main = async () => {
 		await sleep(80);
 
 		progressLog(`See if it's properly done yourself at ${config.OZO_URL} `);
-
-		// Wait for app to run post-clicking processes before closing the browser
-		await sleep(3000);
 	} catch (err) {
 		console.error(
 			`Bro...${emoji.get("tired_face")} %s${emoji.get("sob")}`,
