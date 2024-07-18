@@ -223,6 +223,7 @@ const main = async () => {
 
 		progressLog(`See if it's properly done yourself at ${config.OZO_URL} `);
 
+		// Wait for app to run post-clicking processes before closing the browser
 		await sleep(3000);
 	} catch (err) {
 		console.error(
