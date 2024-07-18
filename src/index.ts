@@ -146,7 +146,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	await page.locator("#div_sub_buttons_regist").click();
 
-	// Wait for the app to run post-clicking processes before closing the browser
+	// Wait for the app to run post-clicking processes
 	await sleep(3000);
 
 	progressLog(`Congrats! Project codes are set.`);
