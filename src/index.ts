@@ -21,6 +21,8 @@ const buttons = {
 
 type Operation = keyof typeof buttons;
 
+//TODO: waitForSelectorをlocator('').waitHandleに置き換える。
+
 /** Presses down '出勤' or '退勤' depending on the operation */
 const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	progressLog(
