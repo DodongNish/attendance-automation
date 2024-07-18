@@ -45,13 +45,13 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 		throw new Error("Your ID or password was wrong.");
 
 	const elementHandle = await page.waitForSelector(
-		`xpath///th[text()='打刻']/following-sibling::td[${
+		`xpath///th[text()='実績']/following-sibling::td[${
 			operation === "clockIn" ? "2" : "3"
 		}]`
 	);
 
 	// Skip clocking in when it's already done
-	if (await elementHandle?.evaluate((el) => el.textContent !== "")) {
+	if (await elementHandle?.evaluate((el) => el.textContent?.includes(":"))) {
 		progressLog("Skipped clocking in because it was already done.");
 		return;
 	}
@@ -90,7 +90,21 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	await page.locator("a#div_inputbutton").click();
 
-	// TODO: 既にプロ番が設定されている場合のスキップ処理(設定済みの状態でもう一度実行した時にタイムアウトエラーになるため。)
+	const handleFor1stTimeInput = await page
+		.locator(`#div_sub_editlist_WORK_TIME_row1 input`)
+		.waitHandle();
+
+	// Skip setting project codes if they are already set
+	if (
+		await handleFor1stTimeInput.evaluate((el) =>
+			el.textContent?.includes(":")
+		)
+	) {
+		progressLog(
+			"Skipped setting project codes because they were already set."
+		);
+		return;
+	}
 
 	// Make sure 作業時間残 is changed from the initial value which is either '00:00' or '(00:00)'
 	await page.waitForSelector(
