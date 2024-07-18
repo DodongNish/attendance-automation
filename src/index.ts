@@ -46,9 +46,9 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 
 	const elementHandle = await page
 		.locator(
-			`xpath///th[text()='実績']/following-sibling::td[${
+			`::-p-xpath(//th[text()='実績']/following-sibling::td[${
 				operation === "clockIn" ? "2" : "3"
-			}]`
+			}])`
 		)
 		.waitHandle();
 
@@ -107,7 +107,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	// Make sure 作業時間残 is changed from the initial value which is either '00:00' or '(00:00)'
 	await page
 		.locator(
-			'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and not(text()="00:00") and not(text()="(00:00)")]'
+			'::-p-xpath(//div[contains(@class, "footer-content-detail")]//span[position()=3 and not(text()="00:00") and not(text()="(00:00)")])'
 		)
 		.waitHandle();
 
@@ -140,7 +140,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 	// Make sure 作業時間残 is '(00:00)'
 	await page
 		.locator(
-			'xpath///div[contains(@class, "footer-content-detail")]//span[position()=3 and text()="(00:00)"]'
+			'::-p-xpath(//div[contains(@class, "footer-content-detail")]//span[position()=3 and text()="(00:00)"])'
 		)
 		.waitHandle();
 
