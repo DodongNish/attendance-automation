@@ -120,6 +120,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		el.textContent?.substring(1, el.textContent.length - 1)
 	)) as string;
 
+	// TODO: 動作確認_複数のプロジェクトがうまく設定されること
 	for (const [index, project] of projects.entries()) {
 		if (project.day != null && new Date().getDay() !== project.day)
 			continue;
