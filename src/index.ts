@@ -222,13 +222,7 @@ const main = async () => {
 		// Press down 出勤 or 退勤
 		await attend(browser, page, operation);
 
-		// Wait for 80ms or display purposes
-		await sleep(80);
-
 		await setProjectCodes(page, operation);
-
-		// Wait for 80ms or display purposes
-		await sleep(80);
 
 		consola.info(
 			`See if it's properly done yourself at ${config.OZO_URL} `
