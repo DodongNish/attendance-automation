@@ -1,11 +1,10 @@
 import puppeteer, { Browser, Page } from "puppeteer";
 import "dotenv/config";
-import * as emoji from "node-emoji";
-import { displayLoading } from "./util/loading";
 import { subtract } from "./util/subtract";
 import projects from "./constants/projects.json";
 import { sleep } from "./util/sleep";
 import { validateEnv } from "./util/validateEnv";
+import consola from "consola";
 
 const config = {
 	OZO_URL: validateEnv("OZO_URL"),
@@ -23,7 +22,7 @@ type Operation = keyof typeof buttons;
 
 /** Presses down '出勤' or '退勤' depending on the operation */
 const attend = async (_browser: Browser, page: Page, operation: Operation) => {
-	progressLog(
+	consola.start(
 		`Hold on, I'm ${
 			operation === "clockIn" ? "clocking in" : "clocking out"
 		} for you.`
@@ -54,14 +53,14 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 
 	// Skip clocking in when it's already done
 	if (await elementHandle?.evaluate((el) => el.textContent?.includes(":"))) {
-		progressLog("Skipped clocking in because it was already done.");
+		consola.warn("Skipped clocking in because it was already done.");
 		return;
 	}
 
 	// Click 出勤 or 退出
-	await page.locator(buttons[operation]).click();
+	await page.locator(buttons[operation]).hover();
 
-	progressLog(
+	consola.success(
 		`${operation === "clockIn" ? "Clocking in" : "Clocking out"} is done.`
 	);
 };
@@ -88,7 +87,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		return result;
 	};
 
-	progressLog(`Now I'm setting the project codes for you.`);
+	consola.start(`Now I'm setting the project codes for you.`);
 
 	await page.locator("a#div_inputbutton").click();
 
@@ -98,7 +97,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	// Skip setting project codes if they are already set
 	if (await handleFor1stTimeInput.evaluate((el) => el.value.includes(":"))) {
-		progressLog(
+		consola.warn(
 			"Skipped setting project codes because they were already set."
 		);
 		return;
@@ -144,12 +143,12 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		)
 		.waitHandle();
 
-	await page.locator("#div_sub_buttons_regist").click();
+	await page.locator("#div_sub_buttons_regist").hover();
 
 	// Wait for the app to run post-clicking processes
 	await sleep(3000);
 
-	progressLog(`Congrats! Project codes are set.`);
+	consola.success(`Congrats! Project codes are set.`);
 };
 
 /** Creates the puppeteer browser instance */
@@ -195,16 +194,11 @@ const validateProjects = () => {
 };
 
 /** Console logs the message with reversed color. */
-const progressLog = (message: string) =>
-	console.log(`\x1b[7m%s${emoji.get("coffee")}\x1b[0m`, message);
 
 // daghan na mamaag jud oy
 const main = async () => {
 	// Retrieve operation input from node process arguments
 	const [, , operation] = process.argv;
-
-	// Display loading icon
-	const intervalId = displayLoading();
 
 	// Create the browser instance
 	const { browser, page } = await createAndConfigureBrowserInstance();
@@ -225,14 +219,12 @@ const main = async () => {
 		// Wait for 80ms or display purposes
 		await sleep(80);
 
-		progressLog(`See if it's properly done yourself at ${config.OZO_URL} `);
-	} catch (err) {
-		console.error(
-			`Bro...${emoji.get("tired_face")} %s${emoji.get("sob")}`,
-			(err as Error).message
+		consola.info(
+			`See if it's properly done yourself at ${config.OZO_URL} `
 		);
+	} catch (err) {
+		consola.error(err);
 	} finally {
-		clearInterval(intervalId);
 		browser.close();
 	}
 };
