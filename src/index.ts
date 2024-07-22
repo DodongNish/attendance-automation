@@ -58,7 +58,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	}
 
 	// Click 出勤 or 退出
-	await page.locator(buttons[operation]).hover();
+	await page.locator(buttons[operation]).click();
 
 	consola.success(
 		`${operation === "clockIn" ? "Clocking in" : "Clocking out"} is done.`
@@ -73,7 +73,14 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		const timesSpentOnSubProjects = projects
 			.filter(
 				(project) =>
-					project.time != null && new Date().getDay() === project.day
+					/* Include if it is not a main project without time */
+					project.time != null &&
+					/* Include if days is not specified, or any of the days matches today */
+					(project.days != null
+						? project.days.some(
+								(day) => new Date().getDay() === day
+						  )
+						: true)
 			)
 			.map((project) => project.time as string);
 
@@ -120,7 +127,11 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	// TODO: 動作確認_複数のプロジェクトがうまく設定されること
 	for (const [index, project] of projects.entries()) {
-		if (project.day != null && new Date().getDay() !== project.day)
+		// Skip the project if any of the days in the days array doesn't match the current day
+		if (
+			project.days != null &&
+			!project.days.some((day) => new Date().getDay() === day)
+		)
 			continue;
 
 		await page.locator(`#text_project_${index + 1}`).fill(project.code);
@@ -143,7 +154,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		)
 		.waitHandle();
 
-	await page.locator("#div_sub_buttons_regist").hover();
+	await page.locator("#div_sub_buttons_regist").click();
 
 	// Wait for the app to run post-clicking processes
 	await sleep(3000);
