@@ -20,6 +20,10 @@ const buttons = {
 
 type Operation = keyof typeof buttons;
 
+// TODO: 動作確認 サブプロジェクトを設定しない場合
+// TODO: 動作確認 サブプロジェクトのdaysを指定しない場合
+// TODO: 登録完了OKボタンを押して完了にする
+
 /** Presses down '出勤' or '退勤' depending on the operation */
 const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 	consola.start(
@@ -152,7 +156,8 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		)
 		.waitHandle();
 
-	await page.locator("#div_sub_buttons_regist").click();
+	// TODO: This is just for check. Put it back to click
+	await page.locator("#div_sub_buttons_regist").hover();
 
 	// Wait for the app to run post-clicking processes
 	await sleep(3000);
@@ -228,7 +233,8 @@ const main = async () => {
 	} catch (err) {
 		consola.error(err);
 	} finally {
-		browser.close();
+		// TODO: Remove comment out
+		// browser.close();
 	}
 };
 
