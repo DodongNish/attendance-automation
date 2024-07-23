@@ -69,7 +69,7 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 const setProjectCodes = async (page: Page, operation: Operation) => {
 	if (operation === "clockIn") return;
 
-	const timeSpentOnMainProject = (totalWorkTime: string): string => {
+	const getTimeSpentOnMainProject = (totalWorkTime: string): string => {
 		const timesSpentOnSubProjects = projects
 			.filter(
 				(project) =>
@@ -125,6 +125,8 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		el.textContent?.substring(1, el.textContent.length - 1)
 	)) as string;
 
+	const timeSpentOnMainProject = getTimeSpentOnMainProject(totalWorkTime);
+
 	// TODO: 動作確認_複数のプロジェクトがうまく設定されること
 	for (const [index, project] of projects.entries()) {
 		// Skip the project if any of the days in the days array doesn't match the current day
@@ -137,11 +139,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		await page.locator(`#text_project_${index + 1}`).fill(project.code);
 		await page
 			.locator(`#div_sub_editlist_WORK_TIME_row${index + 1} input`)
-			.fill(
-				project.time != null
-					? project.time
-					: timeSpentOnMainProject(totalWorkTime)
-			);
+			.fill(project.time != null ? project.time : timeSpentOnMainProject);
 	}
 
 	// Make sure 作業時間残 displays the correct time by clicking anywhere outside the input field
