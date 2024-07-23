@@ -29,8 +29,15 @@ const attend = async (_browser: Browser, page: Page, operation: Operation) => {
 		} for you.`
 	);
 
+	// Potentially bring some joy back to your life
+	const url =
+		Math.random() < 0.05
+			? "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+			: config.OZO_URL;
+
 	// Go to login page
-	await page.goto(config.OZO_URL);
+	await page.goto(url);
+	if (url !== config.OZO_URL) return;
 
 	// Login
 	await page.locator("#login-name").fill(config.USER_ID);
