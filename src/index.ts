@@ -213,8 +213,6 @@ const validateProjects = () => {
 	}
 };
 
-/** Console logs the message with reversed color. */
-
 // daghan na mamaag jud oy
 const main = async () => {
 	// Retrieve operation input from node process arguments
