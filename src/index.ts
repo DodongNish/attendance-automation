@@ -1,10 +1,10 @@
 import puppeteer, { Browser, Page } from "puppeteer";
 import "dotenv/config";
 import { subtract } from "./util/subtract";
-import projects from "./constants/projects.json";
 import { sleep } from "./util/sleep";
 import { validateEnv } from "./util/validateEnv";
 import consola from "consola";
+import projectsJson from "./constants/projects.json";
 
 const config = {
 	OZO_URL: validateEnv("OZO_URL"),
@@ -13,6 +13,8 @@ const config = {
 	BROWSER_IS_HEADLESS: validateEnv("BROWSER_IS_HEADLESS") === "true",
 } as const;
 
+const projects = projectsJson as Project[];
+
 const buttons = {
 	clockIn: "#btn03",
 	clockOut: "#btn04",
@@ -20,9 +22,15 @@ const buttons = {
 
 type Operation = keyof typeof buttons;
 
-// TODO: 動作確認 サブプロジェクトを設定しない場合
-// TODO: 動作確認 サブプロジェクトのdaysを指定しない場合
+type Project = {
+	name: string;
+	code: string;
+	time?: string;
+	days?: number[];
+};
+
 // TODO: 登録完了OKボタンを押して完了にする
+// TODO: 入力したプロ番が存在しない時のエラー
 
 /** Presses down '出勤' or '退勤' depending on the operation */
 const attend = async (_browser: Browser, page: Page, operation: Operation) => {
@@ -131,7 +139,6 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	const timeSpentOnMainProject = getTimeSpentOnMainProject(totalWorkTime);
 
-	// TODO: 動作確認_複数のプロジェクトがうまく設定されること
 	for (const [index, project] of projects.entries()) {
 		// Skip the project if any of the days in the days array doesn't match the current day
 		if (
