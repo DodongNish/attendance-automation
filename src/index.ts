@@ -163,8 +163,7 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 		)
 		.waitHandle();
 
-	// TODO: This is just for check. Put it back to click
-	await page.locator("#div_sub_buttons_regist").hover();
+	await page.locator("#div_sub_buttons_regist").click();
 
 	// Wait for the app to run post-clicking processes
 	await sleep(3000);
@@ -240,8 +239,7 @@ const main = async () => {
 	} catch (err) {
 		consola.error(err);
 	} finally {
-		// TODO: Remove comment out
-		// browser.close();
+		browser.close();
 	}
 };
 
