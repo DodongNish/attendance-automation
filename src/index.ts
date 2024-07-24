@@ -165,9 +165,6 @@ const setProjectCodes = async (page: Page, operation: Operation) => {
 
 	await page.locator("#div_sub_buttons_regist").click();
 
-	// Wait for the app to run post-clicking processes
-	await sleep(3000);
-
 	consola.success(`Congrats! Project codes are set.`);
 };
 
@@ -230,6 +227,9 @@ const main = async () => {
 		await attend(browser, page, operation);
 
 		await setProjectCodes(page, operation);
+
+		// Wait for the app to run post-clicking processes before closing the browser instance
+		await sleep(3000);
 
 		consola.info(
 			`See if it's properly done yourself at ${config.OZO_URL} `
