@@ -133,4 +133,4 @@ dist
 .DS_Store
 
 # Project Numbers
-/src/constants/projects.json
+/projects/projects.json
