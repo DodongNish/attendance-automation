@@ -6,8 +6,8 @@ import { Operation } from "../types/operation";
 import { OPERATION } from "../constants/operations";
 
 const getSubProjectsForToday = (projects: Projects): SubProject[] => {
-	if (projects.sub == null) return [];
-	return projects.sub.filter((project) =>
+	if (projects.subs == null) return [];
+	return projects.subs.filter((project) =>
 		/* Include if days is not specified, or any of the days matches today */
 		project.days != null
 			? project.days.some((day) => new Date().getDay() === day)
@@ -36,13 +36,51 @@ const getTimeSpentOnMainProject = (
 	return diff;
 };
 
+const isValidProjects = (projects: unknown): projects is Projects => {
+	if (typeof projects !== "object" || projects == null) return false;
+
+	/* Validate Main Project */
+	const mainProject = (projects as Projects).main;
+	if (typeof mainProject !== "object" || mainProject == null) return false;
+
+	if (typeof mainProject.code !== "string") return false;
+
+	/* Validate Sub Projects */
+	const subProjects = (projects as Projects).subs;
+
+	// Projects are valid without sub projects. They are arbitrary.
+	if (subProjects == null) return true;
+
+	if (!Array.isArray(subProjects)) return false;
+
+	for (const subProject of subProjects) {
+		if (typeof subProject !== "object" || subProject == null) return false;
+		if (
+			typeof subProject.code !== "string" ||
+			typeof subProject.time !== "string"
+		)
+			return false;
+
+		// Days property is arbitrary.
+		if (subProject.days == null) continue;
+		if (!Array.isArray(subProject.days)) return false;
+
+		if (!subProject.days.every((day) => typeof day === "number"))
+			return false;
+	}
+
+	return true;
+};
+
 /** Sets project codes on the 工数管理 page. */
 export const setProjectCodes = async (
 	page: Page,
 	operation: Operation,
-	projects: Projects
+	projects: unknown
 ) => {
 	if (operation === OPERATION.CLOCK_IN) return;
+	if (!isValidProjects(projects))
+		throw new Error("Projects are not properly set.");
 
 	consola.start(`Now I'm setting the project codes for you.`);
 

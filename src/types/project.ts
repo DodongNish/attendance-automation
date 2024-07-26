@@ -1,10 +1,10 @@
 export type MainProject = {
-	name: string;
+	name?: string;
 	code: string;
 };
 
 export type SubProject = {
-	name: string;
+	name?: string;
 	code: string;
 	time: string;
 	days?: number[];
@@ -12,5 +12,5 @@ export type SubProject = {
 
 export type Projects = {
 	main: MainProject;
-	sub?: SubProject[];
+	subs?: SubProject[];
 };

@@ -54,5 +54,5 @@ export const attend = async (page: Page, operation: Operation) => {
 	// Click 出勤 or 退出
 	await page.locator(buttons[operation]).click();
 
-	consola.success(`Clocking ${inOrOut(operation)} is done.`);
+	consola.success(`Congrats! Clocking ${inOrOut(operation)} is done.`);
 };

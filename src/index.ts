@@ -2,16 +2,13 @@ import puppeteer from "puppeteer";
 import "dotenv/config";
 import { sleep } from "./util/sleep";
 import consola from "consola";
-import projectsJson from "../projects/projects.json";
+import projects from "../projects/projects.json";
 import { config } from "./config";
 import { attend } from "./methods/attend";
 import { Projects } from "./types/project";
 import { setProjectCodes } from "./methods/setProjectCodes";
 import { Operation } from "./types/operation";
 import { OPERATION } from "./constants/operations";
-
-const projects = projectsJson satisfies Projects;
-// TODO: 型エラーが出ていたら、projectの設定方法が間違っていることをREADMEに書いておく。
 
 // TODO: 登録完了OKボタンを押して完了にする
 // TODO: 入力したプロ番が存在しない時のエラー
