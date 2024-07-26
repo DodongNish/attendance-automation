@@ -4,6 +4,7 @@ import { subtract } from "../util/subtract";
 import consola from "consola";
 import { Operation } from "../types/operation";
 import { OPERATION } from "../constants/operations";
+import { sleep } from "../util/sleep";
 
 const getSubProjectsForToday = (projects: Projects): SubProject[] => {
 	if (projects.subs == null) return [];
@@ -144,6 +145,9 @@ export const setProjectCodes = async (
 		// Set project code after main project
 		setProjectCode(project, index + 2);
 	}
+
+	// Prevent the site to reject inputs due to consecutive inputs
+	await sleep(1000);
 
 	// Make sure 作業時間残 displays the correct time by clicking anywhere outside the input field
 	await page.locator(".button_edit").click();
