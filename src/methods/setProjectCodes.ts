@@ -117,7 +117,7 @@ export const setProjectCodes = async (
 		)
 		.waitHandle();
 
-	await page.locator("#div_sub_buttons_regist").hover();
+	await page.locator("#div_sub_buttons_regist").click();
 
 	consola.success(`Congrats! Project codes are set.`);
 };
