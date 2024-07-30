@@ -5,7 +5,6 @@ import consola from "consola";
 import projects from "../projects/projects.json";
 import { config } from "./config";
 import { attend } from "./methods/attend";
-import { Projects } from "./types/project";
 import { setProjectCodes } from "./methods/setProjectCodes";
 import { Operation } from "./types/operation";
 import { OPERATION } from "./constants/operations";
