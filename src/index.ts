@@ -10,7 +10,6 @@ import { Operation } from "./types/operation";
 import { OPERATION } from "./constants/operations";
 
 // TODO: 登録完了OKボタンを押して完了にする
-// TODO: 入力したプロ番が存在しない時のエラー
 
 /** Creates the puppeteer browser instance */
 const createAndConfigureBrowserInstance = async () => {

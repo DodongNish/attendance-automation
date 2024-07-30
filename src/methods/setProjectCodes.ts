@@ -137,6 +137,12 @@ export const setProjectCodes = async (
 			);
 	};
 
+	// Add a listener on dialog events to throw an error if the project code doesn't exist
+	let wrongCodeMsg = "";
+	page.once("dialog", async (dialog) => {
+		wrongCodeMsg = dialog.message();
+	});
+
 	// Set MainProject to the first input
 	setProjectCode(projects.main, 1);
 
@@ -148,6 +154,8 @@ export const setProjectCodes = async (
 
 	// Prevent the site to reject inputs due to consecutive inputs
 	await sleep(1000);
+
+	if (wrongCodeMsg !== "") throw new Error(wrongCodeMsg);
 
 	// Make sure 作業時間残 displays the correct time by clicking anywhere outside the input field
 	await page.locator(".button_edit").click();
