@@ -73,6 +73,19 @@ const isValidProjects = (projects: unknown): projects is Projects => {
 	return true;
 };
 
+const isSubProject = (
+	project: SubProject | MainProject
+): project is SubProject => {
+	return Object.hasOwn(project, "time");
+};
+
+const logTotalWorkTime = (totalWorkTime: string) => {
+	const [hoursWorked, minutesWorked] = totalWorkTime.split(":");
+	consola.info(
+		`You worked for ${hoursWorked} hours and ${minutesWorked} minutes today. お疲れ様でした。`
+	);
+};
+
 /** Sets project codes on the 工数管理 page. */
 export const setProjectCodes = async (
 	page: Page,
@@ -114,12 +127,6 @@ export const setProjectCodes = async (
 		el.textContent?.substring(1, el.textContent.length - 1)
 	)) as string;
 
-	const isSubProject = (
-		project: SubProject | MainProject
-	): project is SubProject => {
-		return Object.hasOwn(project, "time");
-	};
-
 	const timeSpentOnMainProject = getTimeSpentOnMainProject(
 		projects,
 		totalWorkTime
@@ -144,12 +151,12 @@ export const setProjectCodes = async (
 	});
 
 	// Set MainProject to the first input
-	setProjectCode(projects.main, 1);
+	await setProjectCode(projects.main, 1);
 
 	const subProjectsForToday = getSubProjectsForToday(projects);
 	for (const [index, project] of subProjectsForToday.entries()) {
-		// Set project code after main project
-		setProjectCode(project, index + 2);
+		// Set sub projects after main project
+		await setProjectCode(project, index + 2);
 	}
 
 	// Prevent the site to reject inputs due to consecutive inputs
@@ -170,4 +177,6 @@ export const setProjectCodes = async (
 	await page.locator("#div_sub_buttons_regist").click();
 
 	consola.success(`Congrats! Project codes are set.`);
+
+	logTotalWorkTime(totalWorkTime);
 };
