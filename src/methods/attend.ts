@@ -1,9 +1,9 @@
 import consola from "consola";
 import { Page } from "puppeteer";
-import { config } from "../config";
+import { config } from "../configs";
 import { sleep } from "../util/sleep";
-import { Operation } from "../types/operation";
-import { OPERATION } from "../constants/operations";
+import { Operation } from "../types";
+import { OPERATION } from "../constants";
 
 const buttons = {
 	clockIn: "#btn03",

@@ -1,3 +1,7 @@
+import { OPERATION } from "../constants";
+
+export type Operation = (typeof OPERATION)[keyof typeof OPERATION];
+
 export type MainProject = {
 	name?: string;
 	code: string;

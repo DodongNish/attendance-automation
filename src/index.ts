@@ -1,22 +1,14 @@
-import puppeteer from "puppeteer";
 import "dotenv/config";
 import { sleep } from "./util/sleep";
 import consola from "consola";
 import projects from "../projects/projects.json";
-import { config } from "./config";
+import { config } from "./configs";
 import { attend } from "./methods/attend";
 import { setProjectCodes } from "./methods/setProjectCodes";
-import { Operation } from "./types/operation";
-import { OPERATION } from "./constants/operations";
 import { createAndConfigureBrowserInstance } from "./methods/createBrowserInstance";
+import { isValidOperation } from "./util/isValidOperation";
 
 // TODO: 登録完了OKボタンを押して完了にする
-
-const isValidOperation = (operation: string): operation is Operation => {
-	return (
-		operation === OPERATION.CLOCK_IN || operation === OPERATION.CLOCK_OUT
-	);
-};
 
 // daghan na mamaag jud oy
 const main = async () => {

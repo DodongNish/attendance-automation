@@ -1,5 +1,5 @@
 import puppeteer from "puppeteer";
-import { config } from "../config";
+import { config } from "../configs";
 
 /** Creates the puppeteer browser instance */
 export const createAndConfigureBrowserInstance = async () => {

@@ -1,4 +1,4 @@
-import { validateEnv } from "./util/validateEnv";
+import { validateEnv } from "../util/validateEnv";
 
 export const config = {
 	OZO_URL: validateEnv("OZO_URL"),

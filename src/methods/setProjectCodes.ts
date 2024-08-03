@@ -1,9 +1,9 @@
 import { Page } from "puppeteer";
-import { MainProject, Projects, SubProject } from "../types/project";
+import { MainProject, Projects, SubProject } from "../types";
 import { subtract } from "../util/subtract";
 import consola from "consola";
-import { Operation } from "../types/operation";
-import { OPERATION } from "../constants/operations";
+import { Operation } from "../types";
+import { OPERATION } from "../constants";
 import { sleep } from "../util/sleep";
 
 const getSubProjectsForToday = (projects: Projects): SubProject[] => {
