@@ -26,7 +26,7 @@ export const attend = async (page: Page, operation: Operation) => {
 	await page.locator("#login-password").fill(config.USER_PASSWORD);
 	await page.locator("#login-btn").click();
 
-	// Wait for 3 seconds to ensure navigation after clicking is complete.
+	// Wait for 3 seconds to ensure navigation after logging in is complete.
 	await sleep(3000);
 
 	// Throw an error if failed to login

@@ -8,22 +8,9 @@ import { attend } from "./methods/attend";
 import { setProjectCodes } from "./methods/setProjectCodes";
 import { Operation } from "./types/operation";
 import { OPERATION } from "./constants/operations";
+import { createAndConfigureBrowserInstance } from "./methods/createBrowserInstance";
 
 // TODO: 登録完了OKボタンを押して完了にする
-
-/** Creates the puppeteer browser instance */
-const createAndConfigureBrowserInstance = async () => {
-	// Launch the browser and open a new blank page
-	const browser = await puppeteer.launch({
-		headless: config.BROWSER_IS_HEADLESS,
-	});
-	const page = await browser.newPage();
-
-	// Set screen size to default
-	await page.setViewport(null);
-
-	return { browser, page };
-};
 
 const isValidOperation = (operation: string): operation is Operation => {
 	return (
