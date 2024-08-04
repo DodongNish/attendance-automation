@@ -12,13 +12,13 @@ import { isValidOperation } from "./util/isValidOperation";
 
 // daghan na mamaag jud oy
 const main = async () => {
-	// Retrieve operation input from node process arguments
-	const [, , operation] = process.argv;
-
 	// Create the browser instance
 	const { browser, page } = await createAndConfigureBrowserInstance();
 
 	try {
+		// Retrieve operation input from node process arguments
+		const [, , operation] = process.argv;
+
 		if (!isValidOperation(operation))
 			throw new Error(`Invalid Operation: ${operation}`);
 
