@@ -9,22 +9,6 @@ export const createAndConfigureBrowserInstance = async () => {
 	});
 	const page = await browser.newPage();
 
-	// skip downloading images, stylesheets, or fonts when the browser is headless
-	if (config.BROWSER_IS_HEADLESS) {
-		await page.setRequestInterception(true);
-		page.on("request", (request) => {
-			if (
-				["image", "stylesheet", "font"].indexOf(
-					request.resourceType()
-				) !== -1
-			) {
-				request.abort();
-			} else {
-				request.continue();
-			}
-		});
-	}
-
 	// Set screen size to default
 	await page.setViewport(null);
 
