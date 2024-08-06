@@ -27,12 +27,12 @@ const main = async () => {
 
 		await setProjectCodes(page, operation, projects);
 
-		// Wait for the app to run post-clicking processes before closing the browser instance
-		await sleep(3000);
-
 		consola.info(
 			`See if it's properly done yourself at ${config.OZO_URL} `
 		);
+
+		// Wait for the app to run post-clicking processes before closing the browser instance
+		await sleep(3000);
 	} catch (err) {
 		consola.error(err);
 	} finally {

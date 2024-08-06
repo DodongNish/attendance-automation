@@ -6,11 +6,10 @@ export const createAndConfigureBrowserInstance = async () => {
 	// Launch the browser and open a new blank page
 	const browser = await puppeteer.launch({
 		headless: config.BROWSER_IS_HEADLESS,
+		defaultViewport: null,
 	});
-	const page = await browser.newPage();
 
-	// Set screen size to default
-	await page.setViewport(null);
+	const page = await browser.newPage();
 
 	return { browser, page };
 };
