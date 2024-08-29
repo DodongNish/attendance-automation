@@ -10,24 +10,25 @@ OZO の勤怠入力を自動化します。
 
 ```json
 {
-	"main": {
-		"name": "main_project",
-		"code": "00000000-00"
-	},
-	"subs": [
-		{
-			"name": "sub_project_1",
-			"code": "11111111-11",
-			"time": "00:30",
-			"days": [1, 3, 5]
-		},
-		{
-			"name": "sub_project_2",
-			"code": "22222222-22",
-			"time": "02:00"
-		}
-	]
+  "main": {
+    "name": "main_project",
+    "code": "00000000-00"
+  },
+  "subs": [
+    {
+      "name": "sub_project_1",
+      "code": "11111111-11",
+      "time": "00:30",
+      "days": [1, 3, 5]
+    },
+    {
+      "name": "sub_project_2",
+      "code": "22222222-22",
+      "time": "02:00"
+    }
+  ]
 }
+
 ```
 
 `projects.json` には、`main`(主要プロジェクト)、`subs`(サブプロジェクト)を持つ json オブジェクトを設定します。
