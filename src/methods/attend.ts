@@ -14,25 +14,8 @@ const inOrOut = (operation: Operation): string => {
 	return operation === OPERATION.CLOCK_IN ? "in" : "out";
 };
 
-/** Presses down '出勤' or '退勤' depending on the operation */
-export const attend = async (page: Page, operation: Operation) => {
-	consola.start(`Hold on, I'm clocking ${inOrOut(operation)} for you.`);
-
-	// Go to login page
-	await page.goto(config.OZO_URL);
-
-	// Login
-	await page.locator("#login-name").fill(config.USER_ID);
-	await page.locator("#login-password").fill(config.USER_PASSWORD);
-	await page.locator("#login-btn").click();
-
-	// Wait for 3 seconds to ensure navigation after logging in is complete.
-	await sleep(3000);
-
-	// Throw an error if failed to login
-	if ((await page.$("#err-font")) != null)
-		throw new Error("Your ID or password is wrong.");
-
+/** Skips clocking in/out when it's already done. */
+const isAttendanceSkipped = async (page: Page, operation: Operation) => {
 	const elementHandle = await page
 		.locator(
 			`::-p-xpath(//th[text()='実績']/following-sibling::td[${
@@ -41,15 +24,37 @@ export const attend = async (page: Page, operation: Operation) => {
 		)
 		.waitHandle();
 
-	// Skip clocking in when it's already done
 	if (await elementHandle?.evaluate((el) => el.textContent?.includes(":"))) {
 		consola.warn(
 			`Skipped clocking ${inOrOut(
 				operation
 			)} because it was already done.`
 		);
-		return;
+		return true;
 	}
+
+	return false;
+};
+
+/** Throws an error when trying to clock out before clocking in. */
+const checkClockInStatus = async (page: Page) => {
+	const elementHandle = await page
+		.locator(`::-p-xpath(//th[text()='実績']/following-sibling::td[2])`)
+		.waitHandle();
+
+	if (
+		!(await elementHandle?.evaluate((el) => el.textContent?.includes(":")))
+	) {
+		throw new Error("Make sure you clock in first before clocking out.");
+	}
+};
+
+/** Presses down '出勤' or '退勤' depending on the operation */
+export const attend = async (page: Page, operation: Operation) => {
+	if (await isAttendanceSkipped(page, operation)) return;
+	if (operation === OPERATION.CLOCK_OUT) await checkClockInStatus(page);
+
+	consola.start(`Clocking ${inOrOut(operation)} for you...`);
 
 	// Click 出勤 or 退出
 	await page.locator(buttons[operation]).click();

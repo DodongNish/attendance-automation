@@ -7,6 +7,7 @@ import { attend } from "./methods/attend";
 import { setProjectCodes } from "./methods/setProjectCodes";
 import { createAndConfigureBrowserInstance } from "./methods/createBrowserInstance";
 import { isValidOperation } from "./util/isValidOperation";
+import { login } from "./methods/login";
 
 // TODO: 登録完了OKボタンを押して完了にする
 
@@ -22,7 +23,8 @@ const main = async () => {
 		if (!isValidOperation(operation))
 			throw new Error(`Invalid Operation: ${operation}`);
 
-		// Press down 出勤 or 退勤
+		await login(page);
+
 		await attend(page, operation);
 
 		await setProjectCodes(page, operation, projects);
