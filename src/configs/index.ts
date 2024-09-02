@@ -5,4 +5,5 @@ export const config = {
 	USER_ID: validateEnv("USER_ID"),
 	USER_PASSWORD: validateEnv("USER_PASSWORD"),
 	BROWSER_IS_HEADLESS: validateEnv("BROWSER_IS_HEADLESS") === "true",
+	IS_LATECOMER: process.env.IS_LATECOMER === "true",
 } as const;

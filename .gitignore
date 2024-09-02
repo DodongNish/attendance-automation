@@ -134,3 +134,6 @@ dist
 
 # Project Numbers
 /projects/projects.json
+
+# Temporary files
+tmp
