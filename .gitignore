@@ -133,7 +133,7 @@ dist
 .DS_Store
 
 # Project Numbers
-/projects/projects.json
+/options/options.json
 
 # Temporary files
 tmp

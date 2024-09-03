@@ -1,8 +1,7 @@
 import "dotenv/config";
 import { sleep } from "./util/sleep";
 import consola from "consola";
-import projects from "../projects/projects.json";
-import { config } from "./configs";
+import { configs } from "./configs";
 import { attend } from "./methods/attend";
 import { setProjectCodes } from "./methods/setProjectCodes";
 import { createAndConfigureBrowserInstance } from "./methods/createBrowserInstance";
@@ -27,9 +26,11 @@ const main = async () => {
 
 		await attend(page, operation);
 
-		await setProjectCodes(page, operation, projects);
+		await setProjectCodes(page, operation);
 
-		consola.info(`See if it's properly done yourself at ${config.OZO_URL}`);
+		consola.info(
+			`See if it's properly done yourself at ${configs.OZO_URL}`
+		);
 
 		// Wait for the app to run post-clicking processes before closing the browser instance
 		await sleep(3000);

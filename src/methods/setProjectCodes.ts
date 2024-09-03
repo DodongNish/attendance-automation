@@ -1,14 +1,15 @@
 import { Page } from "puppeteer";
-import { MainProject, Projects, SubProject } from "../types";
+import { MainProject, Options, Project, SubProject } from "../types";
 import { subtract } from "../util/subtract";
 import consola from "consola";
 import { Operation } from "../types";
 import { OPERATION } from "../constants";
 import { sleep } from "../util/sleep";
+import options from "../../options/options.json";
 
-const getSubProjectsForToday = (projects: Projects): SubProject[] => {
-	if (projects.subs == null) return [];
-	return projects.subs.filter((project) =>
+const getSubProjectsForToday = (project: Project): SubProject[] => {
+	if (project.subs == null) return [];
+	return project.subs.filter((project) =>
 		/* Include if days is not specified, or any of the days matches today */
 		project.days != null
 			? project.days.some((day) => new Date().getDay() === day)
@@ -17,10 +18,10 @@ const getSubProjectsForToday = (projects: Projects): SubProject[] => {
 };
 
 const getTimeSpentOnMainProject = (
-	projects: Projects,
+	project: Project,
 	totalWorkTime: string
 ): string => {
-	const subProjectsForToday = getSubProjectsForToday(projects);
+	const subProjectsForToday = getSubProjectsForToday(project);
 	if (subProjectsForToday == null) return totalWorkTime;
 
 	const timesSpentOnSubProjects = subProjectsForToday.map(
@@ -37,24 +38,26 @@ const getTimeSpentOnMainProject = (
 	return diff;
 };
 
-const isValidProjects = (projects: unknown): projects is Projects => {
+const isValidProjects = (options: unknown): options is Options => {
+	if (typeof options !== "object" || options == null) return false;
+	if (!Object.hasOwn(options, "projects")) return false;
+
+	const projects = (options as Options).project;
 	if (typeof projects !== "object" || projects == null) return false;
 
 	/* Validate Main Project */
-	const mainProject = (projects as Projects).main;
-	if (typeof mainProject !== "object" || mainProject == null) return false;
+	if (typeof projects.main !== "object" || projects.main == null)
+		return false;
 
-	if (typeof mainProject.code !== "string") return false;
+	if (typeof projects.main.code !== "string") return false;
 
 	/* Validate Sub Projects */
-	const subProjects = (projects as Projects).subs;
-
 	// Projects are valid without sub projects. They are arbitrary.
-	if (subProjects == null) return true;
+	if (projects.subs == null) return true;
 
-	if (!Array.isArray(subProjects)) return false;
+	if (!Array.isArray(projects.subs)) return false;
 
-	for (const subProject of subProjects) {
+	for (const subProject of projects.subs) {
 		if (typeof subProject !== "object" || subProject == null) return false;
 		if (
 			typeof subProject.code !== "string" ||
@@ -87,13 +90,9 @@ const logTotalWorkTime = (totalWorkTime: string) => {
 };
 
 /** Sets project codes on the 工数管理 page. */
-export const setProjectCodes = async (
-	page: Page,
-	operation: Operation,
-	projects: unknown
-) => {
+export const setProjectCodes = async (page: Page, operation: Operation) => {
 	if (operation === OPERATION.CLOCK_IN) return;
-	if (!isValidProjects(projects))
+	if (!isValidProjects(options))
 		throw new Error("Projects are not properly set.");
 
 	consola.start(`Now I'm setting the project codes for you.`);
@@ -128,7 +127,7 @@ export const setProjectCodes = async (
 	)) as string;
 
 	const timeSpentOnMainProject = getTimeSpentOnMainProject(
-		projects,
+		options.project,
 		totalWorkTime
 	);
 
@@ -151,9 +150,9 @@ export const setProjectCodes = async (
 	});
 
 	// Set MainProject to the first input
-	await setProjectCode(projects.main, 1);
+	await setProjectCode(options.project.main, 1);
 
-	const subProjectsForToday = getSubProjectsForToday(projects);
+	const subProjectsForToday = getSubProjectsForToday(options.project);
 	for (const [index, project] of subProjectsForToday.entries()) {
 		// Set sub projects after main project
 		await setProjectCode(project, index + 2);

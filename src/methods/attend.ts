@@ -1,30 +1,39 @@
 import consola from "consola";
 import { Page } from "puppeteer";
-import { Operation } from "../types";
+import { BreakTime, Operation, Options, Project } from "../types";
 import { OPERATION } from "../constants";
 import { sleep } from "../util/sleep";
 import fs from "node:fs";
 import path from "node:path";
 import { subtract } from "../util/subtract";
-import { config } from "../configs";
+import { configs } from "../configs";
+import options from "../../options/options.json";
 
 const buttons = {
 	clockIn: "#btn03",
 	clockOut: "#btn04",
 } as const;
 
-const inOrOut = (operation: Operation): string => {
-	return operation === OPERATION.CLOCK_IN ? "in" : "out";
-};
+/* Utils */
+const isClockIn = (operation: Operation): boolean =>
+	operation === OPERATION.CLOCK_IN;
+
+const isClockOut = (operation: Operation): boolean =>
+	operation === OPERATION.CLOCK_OUT;
+
+const inOrOut = (operation: Operation): string =>
+	isClockIn(operation) ? "in" : "out";
 
 const tmpPath = path.resolve(process.cwd(), "tmp");
 
 const register = async (page: Page) => {
 	page.once("dialog", async (dialog) => dialog.accept());
+	// wait for the event listener to be attached
+	await sleep(1000);
 	await page.locator("::-p-xpath(//span[contains(text(), '登録')])").click();
 };
 
-/** Go to 勤怠管理 page of the day from the top page */
+// Go to 勤怠管理 page of the day from the top page
 const goToManagementPage = async (page: Page) => {
 	await page
 		.locator(
@@ -41,56 +50,84 @@ const goToManagementPage = async (page: Page) => {
 		.click();
 };
 
-/** Frees people from the submission of late arrival reports */
-const clockInLate = async (page: Page, currentTime: string) => {
-	await page.locator("#db_SYUKKIN_JIKOKU1").fill("10:00");
+const isValidBreaktime = (
+	options: unknown
+): options is Options & { breaktime: BreakTime } => {
+	if (typeof options !== "object" || options == null) return false;
+	if (!Object.hasOwn(options, "breaktime")) return false;
 
-	await sleep(1000);
+	const breaktime = (options as Options & { breaktime: BreakTime }).breaktime;
+	if (typeof breaktime !== "object" || breaktime == null) return false;
 
-	await register(page);
-
-	console.log("You are clocking In LATE, but it's set as 10:00.");
-
-	// Record the time of clocking in in a tmp file
-	fs.writeFileSync(tmpPath, currentTime);
+	if (typeof breaktime.from !== "string") return false;
+	if (typeof breaktime.to !== "string") return false;
+	return true;
 };
 
-const clockOutLate = async (page: Page, currentTime: string) => {
-	// Calculate what time it should clock out
-	const clockedInAt = fs.readFileSync(tmpPath).toString();
-	const belatedFor = `00:${clockedInAt.split(":")[1]}`;
-	const clockOutAt = subtract(currentTime, [belatedFor]);
+/* Processes */
 
-	await page.locator("#db_TAISYUTU_JIKOKU1").fill(clockOutAt);
-
-	await sleep(1000);
-
-	await register(page);
-
-	consola.info(`Clocked Out at "${clockOutAt}"`);
-
-	// Remove the tmp file
-	fs.unlinkSync(tmpPath);
-};
-
-/** Clock In/Out depending on the operation */
-const attendLate = async (
+/**
+ *  Possible cases:
+ *  clockIn & late attendance
+ *  clockOut & late attendance
+ *  clockOut & on-time attendance & has breaktime
+ */
+const attendOnManagementPage = async (
 	page: Page,
 	operation: Operation,
+	attendsLate: boolean,
 	currentTime: string
 ) => {
-	consola.start(`Hold on, I'm clocking ${inOrOut(operation)} LATE for you.`);
-
 	await goToManagementPage(page);
 
-	// Set time for clock in/out
-	if (operation === OPERATION.CLOCK_IN) await clockInLate(page, currentTime);
-	else await clockOutLate(page, currentTime);
+	const timeInput = (() => {
+		if (!attendsLate) return currentTime;
+		if (isClockIn(operation)) {
+			/* if clockIn & late attendance */
+			return "10:00";
+		} else {
+			/* if clockOut & late attendance  */
+			// Calculate what time it should clock out
+			const clockedInAt = fs.readFileSync(tmpPath).toString();
+			const belatedFor = `00:${clockedInAt.split(":")[1]}`;
+			return subtract(currentTime, [belatedFor]);
+		}
+	})();
+
+	await page
+		.locator(`#db_${isClockIn(operation) ? "SYUKKIN" : "TAISYUTU"}_JIKOKU1`)
+		.fill(timeInput);
+
+	if (isClockOut(operation) && configs.IS_BREAKTIME_ENABLED) {
+		if (!isValidBreaktime(options))
+			throw new Error(
+				"Breaktime is not properly set. For details on how to set it, go see README.md of this project."
+			);
+		page.locator("#db_RESTSTR_JIKOKU2").fill(options.breaktime.from);
+		page.locator("#db_RESTEND_JIKOKU2").fill(options.breaktime.to);
+	}
+
+	await register(page);
+
+	consola.info(`Clocked ${inOrOut(operation)} at "${timeInput}"`);
+
+	if (attendsLate) {
+		// handles tmp file for storing attendance time in case of late attendance
+		if (isClockIn(operation)) {
+			// Record the time of clocking in in a tmp file
+			fs.writeFileSync(tmpPath, currentTime);
+		} else {
+			// Remove the tmp file
+			fs.unlinkSync(tmpPath);
+		}
+	}
+
+	// Go back to the home page for clocking out to set the project codes
+	if (isClockOut(operation)) page.locator(".header_itcs a").click();
 };
 
 /** Presses down '出勤' or '退勤' depending on the operation */
-const attendOnTime = async (page: Page, operation: Operation) => {
-	consola.start(`Hold on, I'm clocking ${inOrOut(operation)} for you.`);
+const attendByClicking = async (page: Page, operation: Operation) => {
 	// Click 出勤 or 退出
 	await page.locator(buttons[operation]).click();
 };
@@ -100,7 +137,7 @@ const isAttendanceSkipped = async (page: Page, operation: Operation) => {
 	const elementHandle = await page
 		.locator(
 			`::-p-xpath(//th[text()='実績']/following-sibling::td[${
-				operation === OPERATION.CLOCK_IN ? "2" : "3"
+				isClockIn(operation) ? "2" : "3"
 			}])`
 		)
 		.waitHandle();
@@ -133,22 +170,28 @@ const checkClockInStatus = async (page: Page) => {
 /** Presses down '出勤' or '退勤' depending on the operation */
 export const attend = async (page: Page, operation: Operation) => {
 	if (await isAttendanceSkipped(page, operation)) return;
-	if (operation === OPERATION.CLOCK_OUT) await checkClockInStatus(page);
+	if (isClockOut(operation)) await checkClockInStatus(page);
+
+	consola.start(`Hold on, I'm clocking ${inOrOut(operation)} for you.`);
 
 	const currentHours = new Date().getHours();
 	const currentMinutes = new Date().getMinutes();
 
 	// Late attendance if the time is from 10:00 to 10:30 or a tmp file exists
-	const isLate =
-		operation === OPERATION.CLOCK_IN
+	const attendsLate =
+		configs.IS_LATECOMER &&
+		(isClockIn(operation)
 			? currentHours === 10 && currentMinutes <= 30
-			: fs.existsSync(tmpPath);
+			: fs.existsSync(tmpPath));
 
-	// TODO: 休憩入力機能をつける。attendByClicking (attendOnTime && 休憩設定なし） or attendOnManagementPage (遅刻、休憩設定あり)
-
-	if (config.IS_LATECOMER && isLate)
-		await attendLate(page, operation, `${currentHours}:${currentMinutes}`);
-	else await attendOnTime(page, operation);
+	if ((configs.IS_BREAKTIME_ENABLED && isClockOut(operation)) || attendsLate)
+		await attendOnManagementPage(
+			page,
+			operation,
+			attendsLate,
+			`${currentHours}:${currentMinutes}`
+		);
+	else await attendByClicking(page, operation);
 
 	consola.success(`Congrats! Clocking ${inOrOut(operation)} is done.`);
 };

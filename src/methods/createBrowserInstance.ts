@@ -1,11 +1,11 @@
 import puppeteer from "puppeteer";
-import { config } from "../configs";
+import { configs } from "../configs";
 
 /** Creates the puppeteer browser instance */
 export const createAndConfigureBrowserInstance = async () => {
 	// Launch the browser and open a new blank page
 	const browser = await puppeteer.launch({
-		headless: config.BROWSER_IS_HEADLESS,
+		headless: configs.BROWSER_IS_HEADLESS,
 		defaultViewport: null,
 	});
 
